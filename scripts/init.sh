@@ -3,9 +3,20 @@
 # save current dir
 CurrentDIR=$PWD
 
+# install python with pyenv
+# install requisite packages
+sudo yum -y groupinstall "Development Tools"
+sudo yum -y install readline-devel zlib-devel bzip2-devel sqlite-devel openssl-devel
+
+# install pyenv
+git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+
 # config git
 git config --global user.name "tstomoki"
 git config --global user.email tstomoki4@gmail.com
+
+# install tmux
+sudo yum -y install tmux
 
 # install zsh
 sudo yum -y install zsh
