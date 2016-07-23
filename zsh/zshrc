@@ -141,9 +141,6 @@ eval "$(rbenv init -)"
 #アクティブ取られるのがめんどいのでエイリアスで対応
 alias x11='open /Applications/Utilities/XQuartz.app'
 
-
-
-
 ### for PostgreSQLの環境変数
 export PGDATA=/usr/local/var/postgres
 
@@ -464,7 +461,7 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
 # for github
-eval "$(hub alias -s)"
+#eval "$(hub alias -s)"
 
 # change the current directory to a rubygem directory
 ## brew install go
