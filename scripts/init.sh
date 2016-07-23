@@ -3,6 +3,10 @@
 # save current dir
 CurrentDIR=$PWD
 
+# config git
+git config --global user.name "tstomoki"
+git config --global user.email tstomoki4@gmail.com
+
 # install zsh
 sudo yum -y install zsh
 
