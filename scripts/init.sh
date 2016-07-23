@@ -56,3 +56,16 @@ source ~/.zshrc
 
 # install emacs
 sudo yum -y install emacs
+
+# configure emacs
+if [ -e ~/.emacs.d ]; then
+    # 存在する場合
+    echo "~/.emacs.d dir already exists"
+else
+    # 存在しない場合
+    mkdir ~/.emacs.d
+fi
+
+# locate .emacs from emacs/emacs
+ln -s $PWD/emacs/emacs ~/.emacs
+
