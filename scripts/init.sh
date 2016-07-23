@@ -17,6 +17,8 @@ git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
 # config git
 git config --global user.name "tstomoki"
 git config --global user.email tstomoki4@gmail.com
+git config --global core.editor emacs
+git config --global color.ui true
 
 # install tig
 if [ -e $PWD/lib ]; then
@@ -58,14 +60,18 @@ source ~/.zshrc
 sudo yum -y install emacs
 
 # configure emacs
-if [ -e ~/.emacs.d ]; then
+if [ -e ~/.emacs.d/auto-install ]; then
     # 存在する場合
-    echo "~/.emacs.d dir already exists"
+    echo "~/.emacs.d/auto-install dir already exists"
 else
     # 存在しない場合
-    mkdir ~/.emacs.d
+    mkdir -p ~/.emacs.d/auto-install
 fi
+cd ~/.emacs.d/auto-install
+
+wget https://www.emacswiki.org/emacs/download/auto-install.el
+emacs --batch -Q -f batch-byte-compile auto-install.el
 
 # locate .emacs from emacs/emacs
-ln -s $PWD/emacs/emacs ~/.emacs
+ln -fs $PWD/emacs/emacs ~/.emacs
 
