@@ -56,22 +56,14 @@ sudo usermod -s /bin/zsh `whoami`
 ln -s $PWD/zsh/zshrc ~/.zshrc
 source ~/.zshrc
 
-# install emacs
-sudo yum -y install emacs
-
-# configure emacs
-if [ -e ~/.emacs.d/auto-install ]; then
-    # 存在する場合
-    echo "~/.emacs.d/auto-install dir already exists"
-else
-    # 存在しない場合
-    mkdir -p ~/.emacs.d/auto-install
-fi
-cd ~/.emacs.d/auto-install
-
-wget https://www.emacswiki.org/emacs/download/auto-install.el
-emacs --batch -Q -f batch-byte-compile auto-install.el
+# install emacs 24.5
+wget http://ftp.jaist.ac.jp/pub/GNU/emacs/emacs-24.5.tar.gz
+tar xzvf emacs-24.5.tar.gz
+cd emacs-24.5
+./configure
+make
+sudo make install
 
 # locate .emacs from emacs/emacs
-ln -fs $PWD/emacs/emacs ~/.emacs
-
+ln -fs $PWD/emacs/emacs.d/init.el $HOME/.emacs
+cp -rf $PWD/emacs/emacs.d $HOME/.emacs.d
