@@ -26,7 +26,7 @@ autoload -U compinit; compinit # 補完機能は有効にしとく必要があ�
 #compinit
 
 ## cd後自動でlsする
-function chpwd() { ls --color=auto -B }
+function chpwd() { ls -B }
 
 ## ctags
 alias ctags='/usr/local/bin/ctags'
@@ -52,7 +52,7 @@ alias tma='tmux attach -t'
 alias mysql='mysql --pager='cat''
 
 ## command edit
-alias ls='ls --color=auto -B'
+alias ls='ls -B'
 alias la='ls -la'
 
 ## コマンド履歴
@@ -142,7 +142,7 @@ alias gitpurge='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
 
 # history zaw => #
 function mkcd(){mkdir -p $1 && cd $1}
-source "$HOME/dotfiles4linux/zaw/zaw.zsh"
+source "$HOME/.dotfiles/zaw/zaw.zsh"
 bindkey '^h' zaw-history
 # ヒストリに追加されるコマンド行が古いものと同じなら古いものを削除
 setopt hist_ignore_all_dups
@@ -162,7 +162,7 @@ setopt hist_expand
 setopt inc_append_history
 
 # for zsh-syntax-highlighting
-source "$HOME/dotfiles4linux/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 # for pyenv
 export PYENV_ROOT="$HOME/.pyenv"
