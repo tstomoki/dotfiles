@@ -63,6 +63,8 @@ elif [ "mac" = $os_str ]; then
     brew install wget
     # install rbenv
     brew install rbenv ruby-build rbenv-gemset rbenv-gem-rehash
+    # install coreutil
+    brew install coreutils
 fi
 
 # locate .zshrc from zsh/zshrc
