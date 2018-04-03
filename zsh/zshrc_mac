@@ -168,3 +168,32 @@ source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+
+# change the current directory to a rubygem directory
+## brew install go
+## go get github.com/lestrrat/peco/cmd/peco/
+cdgem () {
+  local bundle_gems="$(bundle list | grep '\*' | sed -e 's/^ *\* *//g')"
+  if [[ -n "$bundle_gems" ]]; then
+    gem=$(echo "$bundle_gems" | peco | cut -d \  -f 1)
+    [[ -z "$gem" ]] && return 1
+    cd $(bundle show $gem)
+  else
+    gem=$(gem list | peco | cut -d \  -f 1)
+    [[ -z "$gem" ]] && return 1
+    if ruby --version | grep 'ruby 2' >/dev/null; then
+      cd $(ruby -e 'puts Gem::Specification.find_by_name(ARGV[0]).full_gem_path' -- $gem)
+    else
+      cd $(ruby -e 'puts Gem.source_index.find_name(ARGV[0]).last.full_gem_path' -- $gem)
+    fi
+  fi
+}
+
+# for growl notification
+REPORTTIME=5
+
+# ssh tab color
+function sshc() {
+  tab-color 255 255 0
+  command ssh -A $1
+}

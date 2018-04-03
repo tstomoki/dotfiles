@@ -65,6 +65,8 @@ elif [ "mac" = $os_str ]; then
     brew install rbenv ruby-build rbenv-gemset rbenv-gem-rehash
     # install coreutil
     brew install coreutils
+    # install go, peco
+    brew install go peco
 fi
 
 # locate .zshrc from zsh/zshrc
