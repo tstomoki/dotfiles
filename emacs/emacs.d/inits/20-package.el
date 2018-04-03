@@ -10,6 +10,7 @@
     ;; ここに使っているパッケージを書く。
     flycheck
     git-gutter+
+    git-gutter
     auto-complete
     ))
 
