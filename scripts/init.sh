@@ -69,10 +69,6 @@ elif [ "mac" = $os_str ]; then
     brew install go peco
 fi
 
-# locate .zshrc from zsh/zshrc
-ln -s $root_dir/zsh/zshrc_$os_str ~/.zshrc
-source ~/.zshrc    
-
 # install python with pyenv
 git clone https://github.com/yyuu/pyenv.git ~/.pyenv
 
@@ -85,12 +81,16 @@ git config --global user.email tstomoki4@gmail.com
 git config --global core.editor emacs
 git config --global color.ui true
 
+# set dotfiles
+cp -r $root_dir $HOME/.dotfiles
+ln -s $HOME/.dotfiles/zsh/zshrc_$os_str ~/.zshrc
+
+# locate .zshrc from zsh/zshrc
+source ~/.zshrc
+
 # locate .emacs from emacs/emacs
 ln -fs $root_dir/emacs/emacs.d/init.el $HOME/.emacs
 cp -rf $root_dir/emacs/emacs.d $HOME/.emacs.d
-
-# set dotfiles
-cp -r $root_dir $HOME/.dotfiles
 
 # update submodules
 git submodule update --init --recursive
