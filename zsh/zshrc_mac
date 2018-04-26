@@ -178,7 +178,10 @@ setopt hist_expand
 setopt inc_append_history
 
 # for zsh-syntax-highlighting
-source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source $HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# for zsh-autosuggestion
+source $HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # for pyenv
 export PYENV_ROOT="$HOME/.pyenv"
