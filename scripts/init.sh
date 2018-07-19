@@ -1,17 +1,19 @@
 #!/bin/bash
 if [ $# -ne 1 ]; then
   echo "指定された引数は$#個です。" 1>&2
-  echo "実行するには1個の引数が必要です。e.g. ./init.sh Linux" 1>&2
+  echo "実行するには1個の引数が必要です。e.g. ./init.sh ubuntu" 1>&2
   exit 1
 fi
 
 os_str=`echo $1 | tr '[:upper:]' '[:lower:]'`
 
+echo "os_str: ${os_str}"
+
 # save current dir
 root_dir=$PWD
 
-if [ "linux" = $os_str ]; then
-    echo "Set up as Linux"
+if [ "centos" = $os_str ]; then
+    echo "Set up as CentOS"
     # install requisite packages
     sudo yum -y groupinstall "Development Tools"
     sudo yum -y install readline-devel zlib-devel bzip2-devel sqlite-devel openssl-devel
@@ -52,6 +54,19 @@ if [ "linux" = $os_str ]; then
     ./configure --without-x
     make
     sudo make install
+elif [ "ubuntu" = $os_str ]; then
+    echo "Set up as Ubuntu"
+    # install tmux
+    sudo apt-get -y install tmux
+    # install zsh
+    sudo apt-get -y install zsh
+    # change bash to zsh
+    sudo usermod -s /bin/zsh `whoami`
+
+    # install tig
+    sudo apt-get -y install tig
+    # install emacs 24.5    
+    sudo apt-get -y install emacs
 
 elif [ "mac" = $os_str ]; then
     echo "Set up as Mac"
