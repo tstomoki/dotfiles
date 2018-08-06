@@ -211,6 +211,26 @@ cdgem () {
 # for growl notification
 REPORTTIME=5
 
+ssh-add -K ~/.ssh/id_rsa
+
+# iterm tab color
+function tab_yellow() {
+  tab-color 255 255 0
+}
+
+function tab_blue() {
+  tab-color 0 0 255
+}
+
+
+function tab_red() {
+  tab-color 255 0 0
+}
+
+function rename_tab() {
+  echo -ne "\033]0;$1\007"
+}
+
 # ssh tab color
 function sshc() {
   tab-color 255 255 0
