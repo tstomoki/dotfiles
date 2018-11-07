@@ -96,6 +96,9 @@ git config --global user.email tstomoki4@gmail.com
 git config --global core.editor emacs
 git config --global color.ui true
 
+# update submodules
+git submodule update --init --recursive
+
 # set dotfiles
 cp -r $root_dir $HOME/.dotfiles
 ln -s $HOME/.dotfiles/zsh/zshrc_$os_str ~/.zshrc
@@ -106,6 +109,3 @@ source ~/.zshrc
 # locate .emacs from emacs/emacs
 ln -fs $root_dir/emacs/emacs.d/init.el $HOME/.emacs
 cp -rf $root_dir/emacs/emacs.d $HOME/.emacs.d
-
-# update submodules
-git submodule update --init --recursive
