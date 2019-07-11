@@ -18,6 +18,8 @@ if [ -f ~/.zsh/auto-fu.zsh ]; then
     zstyle ':completion:*' completer _oldlist _complete
 fi
 
+export PGDATA=/usr/local/var/postgres
+
 fpath=(~/zsh-completions/src $fpath)
 autoload -U compinit; compinit # 補完機能は有効にしとく必要がある
 
@@ -154,6 +156,7 @@ alias gitp='git pull origin master'
 alias gitc='git checkout' 
 alias gits='git status' 
 alias gitb='git branch'
+alias gitcm='git commit -m'
 alias gitpurge='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d' 
 
 # history zaw => #

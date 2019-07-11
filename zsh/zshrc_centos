@@ -138,6 +138,7 @@ alias gitp='git pull origin master'
 alias gitc='git checkout' 
 alias gits='git status' 
 alias gitb='git branch'
+alias gitcm='git commit -m' 
 alias gitpurge='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d' 
 
 # history zaw => #
