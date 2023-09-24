@@ -152,12 +152,13 @@ export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 
 #git 
-alias gitp='git pull origin master' 
+alias gitp='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git pull origin'
 alias gitc='git checkout' 
 alias gits='git status' 
 alias gitb='git branch'
 alias gitcm='git commit -m'
-alias gitpurge='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d' 
+alias gitpurge='git branch --merged | grep -v master | grep -v "\*" | xargs -n 1 git branch -d' 
+alias gitpush='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git push origin'
 
 # history zaw => #
 function mkcd(){mkdir -p $1 && cd $1}
@@ -189,7 +190,7 @@ source $HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh
 # for pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+eval "$(pyenv init --path)"
 
 # change the current directory to a rubygem directory
 ## brew install go
@@ -214,7 +215,7 @@ cdgem () {
 # for growl notification
 REPORTTIME=5
 
-ssh-add -K ~/.ssh/id_rsa
+ssh-add ~/.ssh/id_rsa
 
 # iterm tab color
 function tab_yellow() {
@@ -239,3 +240,38 @@ function sshc() {
   tab-color 255 255 0
   command ssh -A $1
 }
+export PATH=/Users/ts-mini/.nodebrew/current/bin:/Users/ts-mini/.pyenv/shims:/Users/ts-mini/.pyenv/bin:/Users/ts-mini/.rbenv/shims:/Users/ts-mini/.rbenv/bin:/usr/local/bibunsho/bin/i386-darwin:/usr/local/texlive/p2009/bin/i386-apple-darwin10.3.0:/usr/local/texlive/2009/bin/universal-darwin:/usr/local/bin:/usr/local/share:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin
+. /Users/ts-mini/.pyenv/versions/anaconda3-5.3.1/etc/profile.d/conda.sh
+
+PATH=$PATH:/usr/local/Cellar/postgresql/10.6/bin
+export PATH
+export PGDATA="$HOME/.postgresql_db"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/ts-mini/home/config/packages/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ts-mini/home/config/packages/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/ts-mini/home/config/packages/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ts-mini/home/config/packages/google-cloud-sdk/completion.zsh.inc'; fi
+export PATH="/usr/local/opt/gettext/bin:$PATH"
+export PATH=$PATH:/Users/ts-mini/Library/Android/sdk/platform-tools
+export PATH="/usr/local/sbin:$PATH"
+
+function pdfmin()
+{
+    local cnt=0
+    for i in $@; do
+        gs -sDEVICE=pdfwrite \
+           -dCompatibilityLevel=1.4 \
+           -dPDFSETTINGS=/ebook \
+           -dNOPAUSE -dQUIET -dBATCH \
+           -sOutputFile=${i%%.*}.min.pdf ${i} &
+        (( (cnt += 1) % 4 == 0 )) && wait
+    done
+    wait && return 0
+}
+export PATH="$HOME/.poetry/bin:$PATH"
+export PATH="/usr/local/opt/openssl@3/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/openssl@3/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl@3/include"
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig"
+export PATH="/Users/ts-mini/.local/bin:$PATH"
