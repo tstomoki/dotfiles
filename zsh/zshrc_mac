@@ -260,8 +260,19 @@ fi
 #   +--------+---------+
 # ------------------------------
 function ai_dev() {
+  local left_pane right_top right_bottom
+  left_pane=$(tmux display-message -p '#{pane_id}')
+
   tmux split-window -h -p 50
+  right_top=$(tmux display-message -p '#{pane_id}')
+
   tmux split-window -v -p 50
+  right_bottom=$(tmux display-message -p '#{pane_id}')
+
+  tmux select-pane -t "$left_pane"  -T "claude-code"
+  tmux select-pane -t "$right_top"  -T "zsh1"
+  tmux select-pane -t "$right_bottom" -T "zsh2"
+
   tmux select-pane -L
   tmux send-keys "claude" Enter
 }
