@@ -14,6 +14,8 @@ if [ -f ~/.zsh/auto-fu.zsh ]; then
     zstyle ':completion:*' completer _oldlist _complete
 fi
 
+# 親シェルから引き継いだ Homebrew の補完パスを compinit 前に除外
+fpath=(${fpath:#/opt/homebrew/*})
 fpath=(~/zsh-completions/src $fpath)
 autoload -U compinit; compinit -u
 
