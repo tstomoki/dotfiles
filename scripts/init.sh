@@ -156,5 +156,5 @@ echo "  tmux source-file ~/.tmux.conf"
 echo
 echo "使い方:"
 echo "  ai_dev        : 3ペインレイアウト起動（左: claude / 右上,右下: 空）"
-echo "  Ctrl+g        : lazygit ポップアップ"
-echo "  Ctrl+f        : ファイルピッカー（選択で @パス をプロンプトに挿入）"
+echo "  C-t → g      : lazygit ポップアップ"
+echo "  C-t → f      : ファイルピッカー（選択で @パス をプロンプトに挿入）"
