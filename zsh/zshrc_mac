@@ -1,12 +1,15 @@
 # ------------------------------
 # General Settings
 # ------------------------------
-## Environment variable configuration
-##
-## LANG
-## http://curiousabt.blog27.fc2.com/blog-entry-65.html
 export LANG=ja_JP.UTF-8
 export LESSCHARSET=utf-8
+
+# Homebrew 初期化（Apple Silicon / Intel 両対応）
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 ## コマンド入力補完
 if [ -f ~/.zsh/auto-fu.zsh ]; then
@@ -18,29 +21,15 @@ if [ -f ~/.zsh/auto-fu.zsh ]; then
     zstyle ':completion:*' completer _oldlist _complete
 fi
 
-export PGDATA=/usr/local/var/postgres
-
 fpath=(~/zsh-completions/src $fpath)
-autoload -U compinit; compinit # 補完機能は有効にしとく必要がある
+autoload -U compinit; compinit
 
-## コマンドのオプションを表示
-#autoload -U compinit
-#compinit
-
-## cd後自動でlsする
-function chpwd() { gls --color=auto --hide='*~' }
-
-## ctags
-alias ctags='/usr/local/bin/ctags'
+## cd 後自動で ls する
+function chpwd() { ls; echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
 ## diff
-## colordiff: http://www.glidenote.com/archives/1403
 alias difc='colordiff -w'
 alias dify='diff -y --suppress-common-lines'
-
-## less
-## colordiffの結果をパイプでlessとかに渡すとおかしなことになるので、
-## -Rを付けるとちゃんとカラー表示される。
 alias diff='colordiff'
 alias less='less -R'
 
@@ -50,19 +39,26 @@ alias tml='tmux ls'
 alias tmk='tmux kill-session -t'
 alias tma='tmux attach -t'
 
-## mysql(出力エディタはcat)
-alias mysql='mysql --pager='cat''
-
-## command edit
+## command shortcuts
 alias ls='gls --color=auto --hide="*~"'
 alias la='ls -la'
+alias ctags='/usr/local/bin/ctags'
+alias mysql='mysql --pager=cat'
 
 ## コマンド履歴
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-setopt hist_ignore_dups     # ignore duplication command history list
-setopt share_history        # share command history data
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_space
+setopt hist_verify
+setopt hist_reduce_blanks
+setopt hist_save_no_dups
+setopt hist_no_store
+setopt hist_expand
+setopt inc_append_history
+setopt share_history
 
 ### for iTerm2 tabs
 tab-color() {
@@ -73,17 +69,17 @@ tab-color() {
 tab-reset() {
     echo -ne "\033]6;1;bg;*;default\a"
 }
-
-#tab title
-function chpwd() { ls; echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
-#tab color
 alias top='tab-color 134 200 0; top; tab-reset'
-chpwd
+
+function tab_yellow() { tab-color 255 255 0 }
+function tab_blue()   { tab-color 0 0 255 }
+function tab_red()    { tab-color 255 0 0 }
+function rename_tab() { echo -ne "\033]0;$1\007" }
+function sshc()       { tab-color 255 255 0; command ssh -A $1 }
 
 # ------------------------------
 # gitブランチとステータスの表示
 # ------------------------------
-## http://d.hatena.ne.jp/mollifier/20090814/p1
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' formats '(%b)'
 zstyle ':vcs_info:*' actionformats '(%b)[%a]'
@@ -97,33 +93,20 @@ precmd () {
 # ------------------------------
 # Look And Feel Settings
 # ------------------------------
-# Terminal Colorの設定
 export LSCOLORS=ExFxCxDxBxegedabagacad
-
-# 補完時の色の設定
 export LS_COLORS='di=01;34:ln=01;35:so=01;32:ex=01;31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=42;30:ow=43;30'
-
-# ZLS_COLORSとは？
 export ZLS_COLORS=$LS_COLORS
-
-# lsコマンド時、自動で色がつく(ls -Gのようなもの？)
 export CLICOLOR=true
-
-# 補完候補に色を付ける
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
 
 ### Prompt ###
-# プロンプトに色を付ける
-# http://www.sakito.com/2011/11/zsh.html
 autoload -U colors; colors
 
-# 一般ユーザ時
 tmp_prompt="%{${fg[cyan]}%}(${HOST}) %#%{${reset_color}%} "
 tmp_prompt2="%{${fg[cyan]}%}%_> %{${reset_color}%}"
 tmp_rprompt="%1(v|%F{magenta}%1v%f|)%{${fg[green]}%}[%(5~,%-2~/.../%2~,%~)]%{${reset_color}%}"
 tmp_sprompt="%{${fg[yellow]}%}%r is correct? [Yes, No, Abort, Edit]:%{${reset_color}%}"
 
-# rootユーザ時(太字にし、アンダーバーをつける)
 if [ ${UID} -eq 0 ]; then
   tmp_prompt="%B%U${tmp_prompt}%u%b"
   tmp_prompt2="%B%U${tmp_prompt2}%u%b"
@@ -131,133 +114,49 @@ if [ ${UID} -eq 0 ]; then
   tmp_sprompt="%B%U${tmp_sprompt}%u%b"
 fi
 
-PROMPT=$tmp_prompt    # 通常のプロンプト
-PROMPT2=$tmp_prompt2  # セカンダリのプロンプト(コマンドが2行以上の時に表示される)
-RPROMPT=$tmp_rprompt  # 右側のプロンプト
-SPROMPT=$tmp_sprompt  # スペル訂正用プロンプト
-
-PATH=/usr/local/bin:/usr/local/share:$PATH
-PATH=/usr/local/texlive/2009/bin/universal-darwin:$PATH
-PATH=/usr/local/texlive/p2009/bin/i386-apple-darwin10.3.0:$PATH
-PATH=/usr/local/bibunsho/bin/i386-darwin:$PATH
-export PATH
+PROMPT=$tmp_prompt
+PROMPT2=$tmp_prompt2
+RPROMPT=$tmp_rprompt
+SPROMPT=$tmp_sprompt
 
 # ------------------------------
-# Programing Setting
+# Programming Settings
 # ------------------------------
-### Ruby ###
+### Python / pyenv ###
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d "$PYENV_ROOT/bin" ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv &>/dev/null; then
+  eval "$(pyenv init -)"
+fi
 
-# rbenv
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
-
-#git 
+### git aliases ###
 alias gitp='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git pull origin'
-alias gitc='git checkout' 
-alias gits='git status' 
+alias gitc='git checkout'
+alias gits='git status'
 alias gitb='git branch'
 alias gitcm='git commit -m'
-alias gitpurge='git branch --merged | grep -v master | grep -v "\*" | xargs -n 1 git branch -d' 
+alias gitpurge='git branch --merged | grep -v master | grep -v "\*" | xargs -n 1 git branch -d'
 alias gitpush='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git push origin'
 
-# history zaw => #
-function mkcd(){mkdir -p $1 && cd $1}
-source "$HOME/.dotfiles/zaw/zaw.zsh"
-bindkey '^h' zaw-history
-# ヒストリに追加されるコマンド行が古いものと同じなら古いものを削除
-setopt hist_ignore_all_dups
-# スペースで始まるコマンド行はヒストリリストから削除
-setopt hist_ignore_space
-# ヒストリを呼び出してから実行する間に一旦編集可能
-setopt hist_verify
-# 余分な空白は詰めて記録
-setopt hist_reduce_blanks  
-# 古いコマンドと同じものは無視 
-setopt hist_save_no_dups
-# historyコマンドは履歴に登録しない
-setopt hist_no_store
-# 補完時にヒストリを自動的に展開         
-setopt hist_expand
-# 履歴をインクリメンタルに追加
-setopt inc_append_history
+### zaw (history picker) ###
+function mkcd(){ mkdir -p $1 && cd $1 }
+if [ -f "$HOME/.dotfiles/zaw/zaw.zsh" ]; then
+  source "$HOME/.dotfiles/zaw/zaw.zsh"
+  bindkey '^h' zaw-history
+fi
 
-# for zsh-syntax-highlighting
-source $HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+### zsh-syntax-highlighting ###
+if [ -f "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]; then
+  source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
 
-# for zsh-autosuggestion
-source $HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh
+### zsh-autosuggestions ###
+if [ -f "$HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
+  source "$HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
 
-# for pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-
-# change the current directory to a rubygem directory
-## brew install go
-## go get github.com/lestrrat/peco/cmd/peco/
-cdgem () {
-  local bundle_gems="$(bundle list | grep '\*' | sed -e 's/^ *\* *//g')"
-  if [[ -n "$bundle_gems" ]]; then
-    gem=$(echo "$bundle_gems" | peco | cut -d \  -f 1)
-    [[ -z "$gem" ]] && return 1
-    cd $(bundle show $gem)
-  else
-    gem=$(gem list | peco | cut -d \  -f 1)
-    [[ -z "$gem" ]] && return 1
-    if ruby --version | grep 'ruby 2' >/dev/null; then
-      cd $(ruby -e 'puts Gem::Specification.find_by_name(ARGV[0]).full_gem_path' -- $gem)
-    else
-      cd $(ruby -e 'puts Gem.source_index.find_name(ARGV[0]).last.full_gem_path' -- $gem)
-    fi
-  fi
-}
-
-# for growl notification
-REPORTTIME=5
-
-ssh-add ~/.ssh/id_rsa
-
-# iterm tab color
-function tab_yellow() {
-  tab-color 255 255 0
-}
-
-function tab_blue() {
-  tab-color 0 0 255
-}
-
-
-function tab_red() {
-  tab-color 255 0 0
-}
-
-function rename_tab() {
-  echo -ne "\033]0;$1\007"
-}
-
-# ssh tab color
-function sshc() {
-  tab-color 255 255 0
-  command ssh -A $1
-}
-export PATH=/Users/ts-mini/.nodebrew/current/bin:/Users/ts-mini/.pyenv/shims:/Users/ts-mini/.pyenv/bin:/Users/ts-mini/.rbenv/shims:/Users/ts-mini/.rbenv/bin:/usr/local/bibunsho/bin/i386-darwin:/usr/local/texlive/p2009/bin/i386-apple-darwin10.3.0:/usr/local/texlive/2009/bin/universal-darwin:/usr/local/bin:/usr/local/share:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin
-. /Users/ts-mini/.pyenv/versions/anaconda3-5.3.1/etc/profile.d/conda.sh
-
-PATH=$PATH:/usr/local/Cellar/postgresql/10.6/bin
-export PATH
-export PGDATA="$HOME/.postgresql_db"
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/ts-mini/home/config/packages/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ts-mini/home/config/packages/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/ts-mini/home/config/packages/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ts-mini/home/config/packages/google-cloud-sdk/completion.zsh.inc'; fi
-export PATH="/usr/local/opt/gettext/bin:$PATH"
-export PATH=$PATH:/Users/ts-mini/Library/Android/sdk/platform-tools
-export PATH="/usr/local/sbin:$PATH"
-
-function pdfmin()
-{
+### PDF 圧縮 ###
+function pdfmin() {
     local cnt=0
     for i in $@; do
         gs -sDEVICE=pdfwrite \
@@ -269,9 +168,103 @@ function pdfmin()
     done
     wait && return 0
 }
-export PATH="$HOME/.poetry/bin:$PATH"
-export PATH="/usr/local/opt/openssl@3/bin:$PATH"
-export LDFLAGS="-L/usr/local/opt/openssl@3/lib"
-export CPPFLAGS="-I/usr/local/opt/openssl@3/include"
-export PKG_CONFIG_PATH="/usr/local/opt/openssl@3/lib/pkgconfig"
-export PATH="/Users/ts-mini/.local/bin:$PATH"
+
+# ------------------------------
+# PATH / Tool Settings
+# ------------------------------
+export PATH="/usr/local/bin:/usr/local/share:$PATH"
+export PATH="/usr/local/sbin:$PATH"
+
+### openssl (Homebrew) ###
+if [ -d "/opt/homebrew/opt/openssl@3" ]; then
+  export PATH="/opt/homebrew/opt/openssl@3/bin:$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+  export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
+elif [ -d "/usr/local/opt/openssl@3" ]; then
+  export PATH="/usr/local/opt/openssl@3/bin:$PATH"
+fi
+
+### Poetry ###
+if [ -d "/opt/poetry/bin" ]; then
+  export PATH="/opt/poetry/bin:$PATH"
+elif [ -d "$HOME/.poetry/bin" ]; then
+  export PATH="$HOME/.poetry/bin:$PATH"
+fi
+
+### uv (modern Python package manager) ###
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+if command -v uv &>/dev/null; then
+  eval "$(uv generate-shell-completion zsh)"
+fi
+
+### Java ###
+if [ -d "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home" ]; then
+  export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+if [ -d "/opt/homebrew/opt/openjdk@21/bin" ]; then
+  export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
+fi
+
+### MySQL client (Homebrew) ###
+if [ -d "/opt/homebrew/opt/mysql-client/bin" ]; then
+  export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+  export LDFLAGS="-L/opt/homebrew/opt/mysql-client/lib $LDFLAGS"
+  export CPPFLAGS="-I/opt/homebrew/opt/mysql-client/include $CPPFLAGS"
+fi
+
+### PostgreSQL ###
+if [ -d "/usr/local/Cellar/postgresql/10.6/bin" ]; then
+  export PATH="$PATH:/usr/local/Cellar/postgresql/10.6/bin"
+  export PGDATA="$HOME/.postgresql_db"
+fi
+
+### Google Cloud SDK ###
+# $HOME/tmp/ または /usr/local/ 以下など柔軟に探す
+_gcloud_path=""
+for _p in \
+  "$HOME/tmp/google-cloud-sdk" \
+  "$HOME/google-cloud-sdk" \
+  "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk"; do
+  if [ -d "$_p" ]; then
+    _gcloud_path="$_p"
+    break
+  fi
+done
+if [ -n "$_gcloud_path" ]; then
+  [ -f "$_gcloud_path/path.zsh.inc" ]       && source "$_gcloud_path/path.zsh.inc"
+  [ -f "$_gcloud_path/completion.zsh.inc" ] && source "$_gcloud_path/completion.zsh.inc"
+  export CLOUDSDK_PYTHON="${PYENV_ROOT:-$HOME/.pyenv}/shims/python"
+fi
+unset _gcloud_path _p
+
+### SSH ###
+[ -f ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_rsa 2>/dev/null
+
+### direnv ###
+if command -v direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
+# ------------------------------
+# AI開発用レイアウト起動
+# レイアウト:
+#   +--------+---------+
+#   |        |         |
+#   | claude |  (空)   |
+#   |        +---------+
+#   |        |  (空)   |
+#   +--------+---------+
+# ------------------------------
+function ai_dev() {
+  tmux split-window -h -p 50
+  tmux split-window -v -p 50
+  tmux select-pane -L
+  tmux send-keys "claude" Enter
+}
+
+# 起動時に ls を実行
+ls
