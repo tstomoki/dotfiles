@@ -1,111 +1,160 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# dotfiles セットアップスクリプト
+# 冪等性あり: 何度実行しても安全
+
+set -euo pipefail
+
+# --- ヘルパー関数 ---
+
+log()  { echo "  $*"; }
+info() { echo; echo "=== $* ==="; }
+ok()   { echo "  [スキップ] $* は導入済みです"; }
+
+# シンボリックリンクを安全に作成（既存ファイルを上書き）
+symlink() {
+  local src="$1" dst="$2"
+  ln -fs "$src" "$dst"
+  log "リンク: $dst -> $src"
+}
+
+# brew パッケージをインストール（インストール済みはスキップ）
+brew_install() {
+  local pkg="$1"
+  if brew list --formula "$pkg" &>/dev/null 2>&1; then
+    ok "brew: $pkg"
+  else
+    log "brew install $pkg ..."
+    brew install "$pkg"
+  fi
+}
+
+# --- 引数チェック ---
 if [ $# -ne 1 ]; then
-  echo "指定された引数は$#個です。" 1>&2
-  echo "実行するには1個の引数が必要です。e.g. ./init.sh ubuntu" 1>&2
+  echo "使い方: $0 <os>" >&2
+  echo "例:     $0 mac" >&2
   exit 1
 fi
 
-os_str=`echo $1 | tr '[:upper:]' '[:lower:]'`
+OS=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "os_str: ${os_str}"
+echo "dotfiles セットアップ開始"
+echo "  OS      : $OS"
+echo "  リポジトリ: $ROOT_DIR"
 
-# save current dir
-root_dir=$PWD
+# ============================================================
+# OS 別パッケージインストール
+# ============================================================
 
-if [ "centos" = $os_str ]; then
-    echo "Set up as CentOS"
-    # install requisite packages
-    sudo yum -y groupinstall "Development Tools"
-    sudo yum -y install readline-devel zlib-devel bzip2-devel sqlite-devel openssl-devel
-    # install tmux
-    sudo yum -y install tmux
-    # install zsh
-    sudo yum -y install zsh
-    # change bash to zsh
-    sudo usermod -s /bin/zsh `whoami`
+if [ "mac" = "$OS" ]; then
 
-    # install tig
-    if [ -e $root_dir/lib ]; then
-    # 存在する場合
-	echo "lib dir already exists"
-    else
-    # 存在しない場合
-	mkdir lib
-    fi
-    cd lib
-    
-    if [ -e tig-2.1.tar.gz ]; then
-	# 存在する場合
-	echo "file already exists"
-    else
-	# 存在しない場合
-	wget http://jonas.nitro.dk/tig/releases/tig-2.1.tar.gz
-    fi
-    tar xvzf tig-2.1.tar.gz
-    cd tig-2.1
-    ./configure
-    make 
-    sudo make install
-    
-    # install emacs 24.5
-    wget http://ftp.jaist.ac.jp/pub/GNU/emacs/emacs-24.5.tar.gz
-    tar xzvf emacs-24.5.tar.gz
-    cd emacs-24.5
-    ./configure --without-x
-    make
-    sudo make install
-elif [ "ubuntu" = $os_str ]; then
-    echo "Set up as Ubuntu"
-    # install tmux
-    sudo apt-get -y install tmux
-    # install zsh
-    sudo apt-get -y install zsh
-    # change bash to zsh
-    sudo usermod -s /bin/zsh `whoami`
+  info "Homebrew"
+  if ! command -v brew &>/dev/null; then
+    log "Homebrew をインストール中..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  else
+    ok "Homebrew"
+  fi
+  # Apple Silicon / Intel 両対応
+  eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null \
+    || eval "$(/usr/local/bin/brew shellenv)" 2>/dev/null \
+    || true
 
-    # install tig
-    sudo apt-get -y install tig
-    # install emacs 24.5    
-    sudo apt-get -y install emacs
+  info "基本ツール (Homebrew)"
+  brew_install wget
+  brew_install coreutils
+  brew_install go
+  brew_install peco
+  brew_install colordiff
 
-elif [ "mac" = $os_str ]; then
-    echo "Set up as Mac"
-    # Command Line Tools for Xcode
-    xcode-select --install
-    # install Homebrew
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    # install wget
-    brew install wget
-    # install rbenv
-    brew install rbenv ruby-build rbenv-gemset rbenv-gem-rehash
-    # install coreutil
-    brew install coreutils
-    # install go, peco
-    brew install go peco
+  info "AI開発環境ツール (Homebrew)"
+  brew_install tmux
+  brew_install lazygit
+  brew_install fzf
+  brew_install bat
+
+  info "開発言語ツール (Homebrew)"
+  brew_install direnv
+  brew_install uv
+
+  info "pyenv"
+  if command -v pyenv &>/dev/null; then
+    ok "pyenv"
+  elif [ -d "$HOME/.pyenv" ]; then
+    ok "pyenv (~/.pyenv)"
+  else
+    log "pyenv をインストール中..."
+    git clone https://github.com/pyenv/pyenv.git "$HOME/.pyenv"
+  fi
+
+elif [ "centos" = "$OS" ]; then
+
+  info "CentOS パッケージインストール"
+  sudo yum -y groupinstall "Development Tools"
+  sudo yum -y install readline-devel zlib-devel bzip2-devel sqlite-devel openssl-devel
+  sudo yum -y install tmux zsh tig emacs
+  sudo usermod -s /bin/zsh "$(whoami)"
+
+elif [ "ubuntu" = "$OS" ]; then
+
+  info "Ubuntu パッケージインストール"
+  sudo apt-get -y install tmux zsh tig emacs
+  sudo usermod -s /bin/zsh "$(whoami)"
+
+else
+  echo "不明な OS: $OS" >&2
+  echo "対応OS: mac / centos / ubuntu" >&2
+  exit 1
 fi
 
-# install python with pyenv
-git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+# ============================================================
+# 共通セットアップ（全 OS）
+# ============================================================
 
-# install rbenv
-git clone https://github.com/sstephenson/rbenv.git ~/.rbenv
-
-# config git
-git config --global user.name "tstomoki"
-git config --global user.email tstomoki4@gmail.com
-git config --global core.editor emacs
+info "Git 設定"
+git config --global user.name  "tstomoki"
+git config --global user.email "tstomoki4@gmail.com"
+git config --global core.editor "vim"
 git config --global color.ui true
+git config --global core.quotepath false
+log "完了"
 
-# update submodules
-git submodule update --init --recursive
+info "Git サブモジュール"
+git -C "$ROOT_DIR" submodule update --init --recursive
+log "完了"
 
-# set dotfiles
-cp -r $root_dir $HOME/.dotfiles
-ln -s $HOME/.dotfiles/zsh/zshrc_$os_str ~/.zshrc
+info "dotfiles を ~/.dotfiles に同期"
+mkdir -p "$HOME/.dotfiles"
+# --delete は使わず追記方向で同期（既存の手動設定を消さない）
+rsync -a --exclude='.git' "$ROOT_DIR/" "$HOME/.dotfiles/"
+log "完了"
 
-# locate .zshrc from zsh/zshrc
-source ~/.zshrc
+info "シンボリックリンク作成"
+symlink "$HOME/.dotfiles/zsh/zshrc_mac"                       "$HOME/.zshrc"
+symlink "$HOME/.dotfiles/tmux/.tmux.conf"                     "$HOME/.tmux.conf"
+symlink "$HOME/.dotfiles/tig/tigrc"                           "$HOME/.tigrc"
 
-# locate .emacs from emacs/emacs
-ln -fs $root_dir/emacs/emacs.d/init.el $HOME/.emacs
-cp -rf $root_dir/emacs/emacs.d $HOME/.emacs.d
+info "スクリプトへの実行権限付与"
+chmod +x "$HOME/.dotfiles/tmux/scripts/tmux-file-picker.sh"
+log "完了"
+
+# ============================================================
+# 完了メッセージ
+# ============================================================
+echo
+echo "=============================="
+echo "  セットアップ完了！"
+echo "=============================="
+echo
+echo "次のコマンドで設定を反映してください:"
+echo
+echo "  source ~/.zshrc"
+echo
+echo "tmux セッションが起動中の場合は追加で:"
+echo
+echo "  tmux source-file ~/.tmux.conf"
+echo
+echo "使い方:"
+echo "  ai_dev        : 3ペインレイアウト起動（左: claude / 右上,右下: 空）"
+echo "  Ctrl+g        : lazygit ポップアップ"
+echo "  Ctrl+f        : ファイルピッカー（選択で @パス をプロンプトに挿入）"
