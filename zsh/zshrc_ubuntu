@@ -69,7 +69,7 @@ precmd () {
 # Look And Feel Settings
 # ------------------------------
 export LSCOLORS=ExFxCxDxBxegedabagacad
-export LS_COLORS='fi=37:di=01;34:ln=01;35:so=01;32:ex=01;31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=01;34:ow=01;34'
+export LS_COLORS='fi=37:di=01;34:ln=01;35:so=01;32:ex=37:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=01;34:ow=01;34'
 export ZLS_COLORS=$LS_COLORS
 export CLICOLOR=true
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
