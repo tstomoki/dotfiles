@@ -42,7 +42,11 @@ alias tmk='tmux kill-session -t'
 alias tma='tmux attach -t'
 
 ## command shortcuts
-alias ls='gls --color=auto --hide="*~"'
+if command -v gls &>/dev/null; then
+  alias ls='gls --color=auto --hide="*~"'
+else
+  alias ls='ls --color=auto'
+fi
 alias la='ls -la'
 alias ctags='/usr/local/bin/ctags'
 alias mysql='mysql --pager=cat'

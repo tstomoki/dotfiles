@@ -98,6 +98,7 @@ elif [ "centos" = "$OS" ]; then
 elif [ "ubuntu" = "$OS" ]; then
 
   info "Ubuntu パッケージインストール"
+  sudo apt-get update
   sudo apt-get -y install tmux zsh tig emacs
   sudo usermod -s /bin/zsh "$(whoami)"
 
@@ -130,7 +131,13 @@ rsync -a --exclude='.git' "$ROOT_DIR/" "$HOME/.dotfiles/"
 log "完了"
 
 info "シンボリックリンク作成"
-symlink "$HOME/.dotfiles/zsh/zshrc_mac"                       "$HOME/.zshrc"
+if [ "mac" = "$OS" ]; then
+  symlink "$HOME/.dotfiles/zsh/zshrc_mac"    "$HOME/.zshrc"
+elif [ "ubuntu" = "$OS" ]; then
+  symlink "$HOME/.dotfiles/zsh/zshrc_ubuntu" "$HOME/.zshrc"
+elif [ "centos" = "$OS" ]; then
+  symlink "$HOME/.dotfiles/zsh/zshrc_centos" "$HOME/.zshrc"
+fi
 symlink "$HOME/.dotfiles/tmux/.tmux.conf"                     "$HOME/.tmux.conf"
 symlink "$HOME/.dotfiles/tig/tigrc"                           "$HOME/.tigrc"
 

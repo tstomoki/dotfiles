@@ -1,10 +1,6 @@
 # ------------------------------
 # General Settings
 # ------------------------------
-## Environment variable configuration
-##
-## LANG
-## http://curiousabt.blog27.fc2.com/blog-entry-65.html
 export LANG=ja_JP.UTF-8
 export LESSCHARSET=utf-8
 
@@ -19,26 +15,14 @@ if [ -f ~/.zsh/auto-fu.zsh ]; then
 fi
 
 fpath=(~/zsh-completions/src $fpath)
-autoload -U compinit; compinit # 補完機能は有効にしとく必要がある
+autoload -U compinit; compinit -u
 
-## コマンドのオプションを表示
-#autoload -U compinit
-#compinit
-
-## cd後自動でlsする
-function chpwd() { ls --color=auto -B }
-
-## ctags
-alias ctags='/usr/local/bin/ctags'
+## cd 後自動で ls する
+function chpwd() { ls; echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
 ## diff
-## colordiff: http://www.glidenote.com/archives/1403
 alias difc='colordiff -w'
 alias dify='diff -y --suppress-common-lines'
-
-## less
-## colordiffの結果をパイプでlessとかに渡すとおかしなことになるので、
-## -Rを付けるとちゃんとカラー表示される。
 alias diff='colordiff'
 alias less='less -R'
 
@@ -48,24 +32,29 @@ alias tml='tmux ls'
 alias tmk='tmux kill-session -t'
 alias tma='tmux attach -t'
 
-## mysql(出力エディタはcat)
-alias mysql='mysql --pager='cat''
-
-## command edit
-alias ls='ls --color=auto -B'
+## command shortcuts
+alias ls='ls --color=auto'
 alias la='ls -la'
+alias mysql='mysql --pager=cat'
 
 ## コマンド履歴
 HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-setopt hist_ignore_dups     # ignore duplication command history list
-setopt share_history        # share command history data
+setopt hist_ignore_dups
+setopt hist_ignore_all_dups
+setopt hist_ignore_space
+setopt hist_verify
+setopt hist_reduce_blanks
+setopt hist_save_no_dups
+setopt hist_no_store
+setopt hist_expand
+setopt inc_append_history
+setopt share_history
 
 # ------------------------------
 # gitブランチとステータスの表示
 # ------------------------------
-## http://d.hatena.ne.jp/mollifier/20090814/p1
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' formats '(%b)'
 zstyle ':vcs_info:*' actionformats '(%b)[%a]'
@@ -79,33 +68,20 @@ precmd () {
 # ------------------------------
 # Look And Feel Settings
 # ------------------------------
-# Terminal Colorの設定
 export LSCOLORS=ExFxCxDxBxegedabagacad
-
-# 補完時の色の設定
 export LS_COLORS='di=01;34:ln=01;35:so=01;32:ex=01;31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=42;30:ow=43;30'
-
-# ZLS_COLORSとは？
 export ZLS_COLORS=$LS_COLORS
-
-# lsコマンド時、自動で色がつく(ls -Gのようなもの？)
 export CLICOLOR=true
-
-# 補完候補に色を付ける
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
 
 ### Prompt ###
-# プロンプトに色を付ける
-# http://www.sakito.com/2011/11/zsh.html
 autoload -U colors; colors
 
-# 一般ユーザ時
 tmp_prompt="%{${fg[cyan]}%}(${HOST}) %#%{${reset_color}%} "
 tmp_prompt2="%{${fg[cyan]}%}%_> %{${reset_color}%}"
 tmp_rprompt="%1(v|%F{magenta}%1v%f|)%{${fg[green]}%}[%(5~,%-2~/.../%2~,%~)]%{${reset_color}%}"
 tmp_sprompt="%{${fg[yellow]}%}%r is correct? [Yes, No, Abort, Edit]:%{${reset_color}%}"
 
-# rootユーザ時(太字にし、アンダーバーをつける)
 if [ ${UID} -eq 0 ]; then
   tmp_prompt="%B%U${tmp_prompt}%u%b"
   tmp_prompt2="%B%U${tmp_prompt2}%u%b"
@@ -113,62 +89,118 @@ if [ ${UID} -eq 0 ]; then
   tmp_sprompt="%B%U${tmp_sprompt}%u%b"
 fi
 
-PROMPT=$tmp_prompt    # 通常のプロンプト
-PROMPT2=$tmp_prompt2  # セカンダリのプロンプト(コマンドが2行以上の時に表示される)
-RPROMPT=$tmp_rprompt  # 右側のプロンプト
-SPROMPT=$tmp_sprompt  # スペル訂正用プロンプト
-
-PATH=/usr/local/bin:/usr/local/share:$PATH
-PATH=/usr/local/texlive/2009/bin/universal-darwin:$PATH
-PATH=/usr/local/texlive/p2009/bin/i386-apple-darwin10.3.0:$PATH
-PATH=/usr/local/bibunsho/bin/i386-darwin:$PATH
-export PATH
+PROMPT=$tmp_prompt
+PROMPT2=$tmp_prompt2
+RPROMPT=$tmp_rprompt
+SPROMPT=$tmp_sprompt
 
 # ------------------------------
-# Programing Setting
+# Programming Settings
 # ------------------------------
-### Ruby ###
-
-# rbenv
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
-
-#git 
-alias gitp='git pull origin master' 
-alias gitc='git checkout' 
-alias gits='git status' 
-alias gitb='git branch'
-alias gitcm='git commit -m' 
-alias gitpurge='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d' 
-
-# history zaw => #
-function mkcd(){mkdir -p $1 && cd $1}
-source "$HOME/.dotfiles/zaw/zaw.zsh"
-bindkey '^h' zaw-history
-# ヒストリに追加されるコマンド行が古いものと同じなら古いものを削除
-setopt hist_ignore_all_dups
-# スペースで始まるコマンド行はヒストリリストから削除
-setopt hist_ignore_space
-# ヒストリを呼び出してから実行する間に一旦編集可能
-setopt hist_verify
-# 余分な空白は詰めて記録
-setopt hist_reduce_blanks  
-# 古いコマンドと同じものは無視 
-setopt hist_save_no_dups
-# historyコマンドは履歴に登録しない
-setopt hist_no_store
-# 補完時にヒストリを自動的に展開         
-setopt hist_expand
-# 履歴をインクリメンタルに追加
-setopt inc_append_history
-
-# for zsh-syntax-highlighting
-source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
-# for pyenv
+### Python / pyenv ###
 export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+[[ -d "$PYENV_ROOT/bin" ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv &>/dev/null; then
+  eval "$(pyenv init -)"
+fi
 
-# for zsh-autosuggestions
-source ~/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh
+### git aliases ###
+alias gitp='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git pull origin'
+alias gitc='git checkout'
+alias gits='git status'
+alias gitb='git branch'
+alias gitcm='git commit -m'
+alias gitpurge='git branch --merged | grep -v master | grep -v "\*" | xargs -n 1 git branch -d'
+alias gitpush='git branch --contains=HEAD | grep "\*" | tr -d "* " | xargs -L 1 git push origin'
+
+### zaw (history picker) ###
+function mkcd(){ mkdir -p $1 && cd $1 }
+if [ -f "$HOME/.dotfiles/zaw/zaw.zsh" ]; then
+  source "$HOME/.dotfiles/zaw/zaw.zsh"
+  bindkey '^h' zaw-history
+fi
+
+### zsh-syntax-highlighting ###
+if [ -f "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]; then
+  source "$HOME/.dotfiles/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+
+### zsh-autosuggestions ###
+if [ -f "$HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
+  source "$HOME/.dotfiles/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
+
+# ------------------------------
+# PATH / Tool Settings
+# ------------------------------
+export PATH="/usr/local/bin:/usr/local/share:$PATH"
+export PATH="/usr/local/sbin:$PATH"
+
+### uv (modern Python package manager) ###
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+### Poetry ###
+if [ -d "/opt/poetry/bin" ]; then
+  export PATH="/opt/poetry/bin:$PATH"
+elif [ -d "$HOME/.poetry/bin" ]; then
+  export PATH="$HOME/.poetry/bin:$PATH"
+fi
+
+### Google Cloud SDK ###
+_gcloud_path=""
+for _p in \
+  "$HOME/tmp/google-cloud-sdk" \
+  "$HOME/google-cloud-sdk" \
+  "/usr/lib/google-cloud-sdk"; do
+  if [ -d "$_p" ]; then
+    _gcloud_path="$_p"
+    break
+  fi
+done
+if [ -n "$_gcloud_path" ]; then
+  [ -f "$_gcloud_path/path.zsh.inc" ]       && source "$_gcloud_path/path.zsh.inc"
+  [ -f "$_gcloud_path/completion.zsh.inc" ] && source "$_gcloud_path/completion.zsh.inc"
+  export CLOUDSDK_PYTHON="${PYENV_ROOT:-$HOME/.pyenv}/shims/python"
+fi
+unset _gcloud_path _p
+
+### SSH ###
+[ -f ~/.ssh/id_rsa ] && ssh-add ~/.ssh/id_rsa 2>/dev/null
+
+### direnv ###
+if command -v direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
+# ------------------------------
+# AI開発用レイアウト起動
+# レイアウト:
+#   +--------+---------+
+#   |        |         |
+#   | claude |  (空)   |
+#   |        +---------+
+#   |        |  (空)   |
+#   +--------+---------+
+# ------------------------------
+function ai_dev() {
+  local left_pane right_top right_bottom
+  left_pane=$(tmux display-message -p '#{pane_id}')
+
+  tmux split-window -h -l 50%
+  right_top=$(tmux display-message -p '#{pane_id}')
+
+  tmux split-window -v -l 50%
+  right_bottom=$(tmux display-message -p '#{pane_id}')
+
+  tmux select-pane -t "$left_pane"  -T "claude-code"
+  tmux select-pane -t "$right_top"  -T "zsh1"
+  tmux select-pane -t "$right_bottom" -T "zsh2"
+
+  tmux select-pane -L
+  tmux send-keys "claude" Enter
+}
+
+# 起動時に ls を実行
+ls
