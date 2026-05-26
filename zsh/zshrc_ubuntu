@@ -18,7 +18,7 @@ fpath=(~/zsh-completions/src $fpath)
 autoload -U compinit; compinit -u
 
 ## cd 後自動で ls する
-function chpwd() { ls; echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
+function chpwd() { ls --color=always; echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
 ## diff
 alias difc='colordiff -w'
@@ -69,7 +69,7 @@ precmd () {
 # Look And Feel Settings
 # ------------------------------
 export LSCOLORS=ExFxCxDxBxegedabagacad
-export LS_COLORS='di=01;34:ln=01;35:so=01;32:ex=01;31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=42;30:ow=43;30'
+export LS_COLORS='fi=37:di=01;34:ln=01;35:so=01;32:ex=01;31:bd=46;34:cd=43;34:su=41;30:sg=46;30:tw=01;34:ow=01;34'
 export ZLS_COLORS=$LS_COLORS
 export CLICOLOR=true
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
@@ -77,7 +77,7 @@ zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
 ### Prompt ###
 autoload -U colors; colors
 
-tmp_prompt="%{${fg[red]}%}(${HOST}) %#%{${reset_color}%} "
+tmp_prompt="%B%{${fg[red]}%}(${HOST}) %#%{${reset_color}%}%b "
 tmp_prompt2="%{${fg[cyan]}%}%_> %{${reset_color}%}"
 tmp_rprompt="%1(v|%F{magenta}%1v%f|)%{${fg[green]}%}[%(5~,%-2~/.../%2~,%~)]%{${reset_color}%}"
 tmp_sprompt="%{${fg[yellow]}%}%r is correct? [Yes, No, Abort, Edit]:%{${reset_color}%}"
